@@ -154,6 +154,7 @@
             this.buttonUseWeapon.TabIndex = 11;
             this.buttonUseWeapon.Text = "Use";
             this.buttonUseWeapon.UseVisualStyleBackColor = true;
+            this.buttonUseWeapon.Click += new System.EventHandler(this.buttonUseWeapon_Click);
             // 
             // buttonUsePotion
             // 
@@ -163,6 +164,7 @@
             this.buttonUsePotion.TabIndex = 12;
             this.buttonUsePotion.Text = "Use";
             this.buttonUsePotion.UseVisualStyleBackColor = true;
+            this.buttonUsePotion.Click += new System.EventHandler(this.buttonUsePotion_Click);
             // 
             // buttonGoNorth
             // 
@@ -172,6 +174,7 @@
             this.buttonGoNorth.TabIndex = 13;
             this.buttonGoNorth.Text = "North";
             this.buttonGoNorth.UseVisualStyleBackColor = true;
+            this.buttonGoNorth.Click += new System.EventHandler(this.buttonGoNorth_Click);
             // 
             // buttonGoEast
             // 
@@ -181,6 +184,7 @@
             this.buttonGoEast.TabIndex = 14;
             this.buttonGoEast.Text = "East";
             this.buttonGoEast.UseVisualStyleBackColor = true;
+            this.buttonGoEast.Click += new System.EventHandler(this.buttonGoEast_Click);
             // 
             // buttonGoSouth
             // 
@@ -190,6 +194,7 @@
             this.buttonGoSouth.TabIndex = 15;
             this.buttonGoSouth.Text = "South";
             this.buttonGoSouth.UseVisualStyleBackColor = true;
+            this.buttonGoSouth.Click += new System.EventHandler(this.buttonGoSouth_Click);
             // 
             // buttonGoWest
             // 
@@ -199,6 +204,7 @@
             this.buttonGoWest.TabIndex = 16;
             this.buttonGoWest.Text = "West";
             this.buttonGoWest.UseVisualStyleBackColor = true;
+            this.buttonGoWest.Click += new System.EventHandler(this.buttonGoWest_Click);
             // 
             // dataGridViewInventory
             // 

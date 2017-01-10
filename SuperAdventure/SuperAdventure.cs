@@ -32,5 +32,35 @@ namespace SuperAdventure
         {
 
         }
+
+        private void buttonGoNorth_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonGoEast_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonGoSouth_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonGoWest_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonUseWeapon_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonUsePotion_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
