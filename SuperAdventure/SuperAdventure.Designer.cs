@@ -221,7 +221,6 @@
             this.dataGridViewInventory.RowHeadersVisible = false;
             this.dataGridViewInventory.Size = new System.Drawing.Size(312, 309);
             this.dataGridViewInventory.TabIndex = 17;
-            this.dataGridViewInventory.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // dataGridViewQuests
             // 
