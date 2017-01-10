@@ -1,0 +1,5 @@
+X:\Development\C#\SuperAdventure\Engine\bin\Debug\Engine.dll
+X:\Development\C#\SuperAdventure\Engine\bin\Debug\Engine.pdb
+X:\Development\C#\SuperAdventure\Engine\obj\Debug\Engine.dll
+X:\Development\C#\SuperAdventure\Engine\obj\Debug\Engine.pdb
+X:\Development\C#\SuperAdventure\Engine\obj\Debug\Engine.csprojResolveAssemblyReference.cache
