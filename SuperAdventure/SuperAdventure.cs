@@ -280,6 +280,8 @@ namespace SuperAdventure
                     PlayerDefeated();
                 }
             }
+
+            ScrollToBottomOfMessages();
         }
 
         private void buttonUsePotion_Click(object sender, EventArgs e)
@@ -296,6 +298,8 @@ namespace SuperAdventure
             valueHitPoints.Text = _player.CurrentHitPoints.ToString();
             UpdateInventoryList();
             UpdatePotionList();
+
+            ScrollToBottomOfMessages();
         }
 
         private void PlayerDrinksPotion()
@@ -403,6 +407,12 @@ namespace SuperAdventure
                     richTextBoxMessages.Text += "You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.NamePlural + Environment.NewLine;
                 }
             }
+        }
+
+        private void ScrollToBottomOfMessages()
+        {
+            richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
+            richTextBoxMessages.ScrollToCaret();
         }
     }
 }

@@ -32,36 +32,22 @@ namespace Engine
             {
                 return true;
             }
-
-            foreach (InventoryItem inventoryItem in Inventory)
-            {
-                if (inventoryItem.Details.ID == location.ItemRequiredToEnter.ID)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return Inventory.Exists(inventoryItem => inventoryItem.Details.ID == location.ItemRequiredToEnter.ID);
         }
 
         public bool HasThisQuest(Quest quest)
         {
-            foreach (PlayerQuest playerQuest in Quests)
-            {
-                if (playerQuest.Details.ID == quest.ID)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return Quests.Exists(playerQuest => playerQuest.Details.ID == quest.ID);
         }
 
         public bool CompletedThisQuest(Quest quest)
         {
+            //return Quests.Exists(playerQuest => playerQuest.Details.ID == quest.ID);
             foreach (PlayerQuest playerQuest in Quests)
             {
                 if (playerQuest.Details.ID == quest.ID)
                 {
-                    return playerQuest.IsCompleted;
+                    return playerQuest.IsCompleted; //<-- return this, not just true or false
                 }
             }
             return false;
@@ -71,25 +57,29 @@ namespace Engine
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                bool foundItemInPlayersInventory = false;
-
-                foreach (InventoryItem ii in Inventory)
-                {
-                    if (ii.Details.ID == qci.Details.ID)
-                    {
-                        foundItemInPlayersInventory = true;
-
-                        if (ii.Quantity < qci.Quantity)
-                        {
-                            return false;
-                        }
-                    }
-                }
-
-                if (!foundItemInPlayersInventory)
+                if (!Inventory.Exists(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
                 {
                     return false;
                 }
+                //bool foundItemInPlayersInventory = false;
+
+                //foreach (InventoryItem ii in Inventory)
+                //{
+                //    if (ii.Details.ID == qci.Details.ID)
+                //    {
+                //        foundItemInPlayersInventory = true;
+
+                //        if (ii.Quantity < qci.Quantity)
+                //        {
+                //            return false;
+                //        }
+                //    }
+                //}
+
+                //if (!foundItemInPlayersInventory)
+                //{
+                //    return false;
+                //}
             }
             return true;
         }
