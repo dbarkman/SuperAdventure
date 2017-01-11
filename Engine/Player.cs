@@ -69,31 +69,25 @@ namespace Engine
 
         public bool HasAllQuestCompletionItems(Quest quest)
         {
-            // See if the player has all the items needed to complete the quest
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
                 bool foundItemInPlayersInventory = false;
 
-                // Check each item in the player's inventory, to see if they have it, and enough of it
                 foreach (InventoryItem ii in Inventory)
                 {
-                    // The player has this item in their inventory
                     if (ii.Details.ID == qci.Details.ID)
                     {
                         foundItemInPlayersInventory = true;
 
                         if (ii.Quantity < qci.Quantity)
                         {
-                            // The player does not have enough of this item to complete the quest
                             return false;
                         }
                     }
                 }
 
-                // If we didn't find the required item, set our variable and stop looking for other items
                 if (!foundItemInPlayersInventory)
                 {
-                    // The player does not have this item in their inventory
                     return false;
                 }
             }
@@ -102,14 +96,12 @@ namespace Engine
 
         public void RemoveQuestCompletionItems(Quest quest)
         {
-            // Remove quest items from inventory
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
                 foreach (InventoryItem ii in Inventory)
                 {
                     if (ii.Details.ID == qci.Details.ID)
                     {
-                        // Subtract the quantity from the player's inventory that was needed to complete the quest
                         ii.Quantity -= qci.Quantity;
                         break;
                     }
@@ -117,33 +109,38 @@ namespace Engine
             }
         }
 
-        public void AddItemToInventory(Item itemToAdd)
+        public void AddItemToInventory(Item item)
         {
-            // Add the reward item to the player's inventory
             foreach (InventoryItem ii in Inventory)
             {
-                if (ii.Details.ID == itemToAdd.ID)
+                if (ii.Details.ID == item.ID)
                 {
-                    // They have the item in their inventory, so increase the quantity by one
                     ii.Quantity++;
-
                     return;
                 }
             }
-            // They didn't have the item, so add it to their inventory, with a quantity of 1
-            Inventory.Add(new InventoryItem(itemToAdd, 1));
+            Inventory.Add(new InventoryItem(item, 1));
+        }
+
+        public void RemoveItemFromInventory(Item item)
+        {
+            foreach (InventoryItem ii in Inventory)
+            {
+                if (ii.Details.ID == item.ID)
+                {
+                    ii.Quantity--;
+                    return;
+                }
+            }
         }
 
         public void MarkQuestCompleted(Quest quest)
         {
-            // Find the quest in the player's quest list
             foreach (PlayerQuest pq in Quests)
             {
                 if (pq.Details.ID == quest.ID)
                 {
-                    // Mark it as completed
                     pq.IsCompleted = true;
-
                     return;
                 }
             }
