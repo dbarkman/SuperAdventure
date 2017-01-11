@@ -15,6 +15,7 @@ namespace SuperAdventure
     public partial class SuperAdventure : Form
     {
         private Player _player;
+        private Location _location;
         private Monster _currentMonster;
 
         public SuperAdventure()
@@ -51,8 +52,11 @@ namespace SuperAdventure
             MoveTo(_player.CurrentLocation.LocationToWest);
         }
 
-        private void MoveTo(Location newLocation)
+        private void MoveTo(Location newLocation, int respawn = 0)
         {
+            _location = newLocation;
+            if (respawn == 0) richTextBoxMessages.Text = "";
+
             if (!_player.HasRequiredItemToEnterLocation(newLocation))
             {
                 richTextBoxMessages.Text += "You must have an " + newLocation.ItemRequiredToEnter.Name + " to enter this location." + Environment.NewLine;
@@ -129,21 +133,18 @@ namespace SuperAdventure
                     richTextBoxMessages.Text += qci.Quantity.ToString() + " " + qci.Details.NamePlural + Environment.NewLine;
                 }
             }
-            richTextBoxMessages.Text += Environment.NewLine;
 
             _player.Quests.Add(new PlayerQuest(newLocation.QuestAvailableHere));
         }
 
         private void RewardPlayerForCompletingQuest(Location newLocation)
         {
-            richTextBoxMessages.Text += Environment.NewLine;
             richTextBoxMessages.Text += "You complete the '" + newLocation.QuestAvailableHere.Name + "' quest." + Environment.NewLine;
 
             richTextBoxMessages.Text += "You receive: " + Environment.NewLine;
             richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardExperiencePoints.ToString() + " experience points" + Environment.NewLine;
             richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardGold.ToString() + " gold" + Environment.NewLine;
             richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardItem.Name + Environment.NewLine;
-            richTextBoxMessages.Text += Environment.NewLine;
 
             _player.RemoveQuestCompletionItems(newLocation.QuestAvailableHere);
             _player.ExperiencePoints += newLocation.QuestAvailableHere.RewardExperiencePoints;
@@ -152,11 +153,12 @@ namespace SuperAdventure
             _player.MarkQuestCompleted(newLocation.QuestAvailableHere);
         }
 
-        private void SpawnNewMonster(Location newLocation)
+        private void SpawnNewMonster(Location location)
         {
-            richTextBoxMessages.Text += "You see a " + newLocation.MonsterLivingHere.Name + Environment.NewLine;
+            richTextBoxMessages.Text += "You see a " + location.MonsterLivingHere.Name + Environment.NewLine;
+            richTextBoxMessages.Text += Environment.NewLine;
 
-            Monster standardMonster = World.MonsterByID(newLocation.MonsterLivingHere.ID);
+            Monster standardMonster = World.MonsterByID(location.MonsterLivingHere.ID);
 
             _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
                 standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
@@ -170,16 +172,12 @@ namespace SuperAdventure
         private void ToggleWeaponButtons(bool visible)
         {
             comboBoxWeapons.Visible = visible;
-            comboBoxPotions.Visible = visible;
             buttonUseWeapon.Visible = visible;
-            buttonUsePotion.Visible = visible;
         }
 
         private void TogglePotionButtons(bool visible)
         {
-            comboBoxWeapons.Visible = visible;
             comboBoxPotions.Visible = visible;
-            buttonUseWeapon.Visible = visible;
             buttonUsePotion.Visible = visible;
         }
 
@@ -231,19 +229,10 @@ namespace SuperAdventure
                 }
             }
 
-            if (weapons.Count == 0)
-            {
-                labelSelectAction.Visible = false;
-                ToggleWeaponButtons(false);
-            }
-            else
-            {
-                labelSelectAction.Visible = true;
-                comboBoxWeapons.DataSource = weapons;
-                comboBoxWeapons.DisplayMember = "Name";
-                comboBoxWeapons.ValueMember = "ID";
-                comboBoxWeapons.SelectedIndex = 0;
-            }
+            comboBoxWeapons.DataSource = weapons;
+            comboBoxWeapons.DisplayMember = "Name";
+            comboBoxWeapons.ValueMember = "ID";
+            comboBoxWeapons.SelectedIndex = 0;
         }
 
         private void UpdatePotionList()
@@ -263,12 +252,10 @@ namespace SuperAdventure
 
             if (healingPotions.Count == 0)
             {
-                labelSelectAction.Visible = false;
                 TogglePotionButtons(false);
             }
             else
             {
-                labelSelectAction.Visible = true;
                 comboBoxPotions.DataSource = healingPotions;
                 comboBoxPotions.DisplayMember = "Name";
                 comboBoxPotions.ValueMember = "ID";
@@ -359,7 +346,8 @@ namespace SuperAdventure
 
             richTextBoxMessages.Text += Environment.NewLine;
 
-            MoveTo(_player.CurrentLocation);
+            FullyHealPlayer();
+            SpawnNewMonster(_location);
         }
 
         private void MonsterAttacks()
@@ -368,14 +356,15 @@ namespace SuperAdventure
             _player.CurrentHitPoints -= damageToPlayer;
 
             richTextBoxMessages.Text += "The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage." + Environment.NewLine;
+            richTextBoxMessages.Text += Environment.NewLine;
 
             valueHitPoints.Text = _player.CurrentHitPoints.ToString();
         }
 
         private void PlayerDefeated()
         {
-            richTextBoxMessages.Text += "The " + _currentMonster.Name + " killed you." + Environment.NewLine;
-            MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+            richTextBoxMessages.Text = "The " + _currentMonster.Name + " killed you." + Environment.NewLine;
+            MoveTo(World.LocationByID(World.LOCATION_ID_HOME), 1);
         }
 
         private void LootMonster()
