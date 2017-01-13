@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Engine
 {
@@ -24,6 +21,11 @@ namespace Engine
 
             Inventory = new List<InventoryItem>();
             Quests = new List<PlayerQuest>();
+        }
+
+        public void FullyHealPlayer()
+        {
+            CurrentHitPoints = MaximumHitPoints;
         }
 
         public bool HasRequiredItemToEnterLocation(Location location)

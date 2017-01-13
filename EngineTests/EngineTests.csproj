@@ -51,8 +51,20 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="HealingPotionTests.cs" />
+    <Compile Include="InventoryItemTests.cs" />
+    <Compile Include="ItemTests.cs" />
+    <Compile Include="LivingCreatureTests.cs" />
+    <Compile Include="LocationTests.cs" />
+    <Compile Include="LootItemTests.cs" />
+    <Compile Include="MonsterTests.cs" />
+    <Compile Include="PlayerQuestTests.cs" />
     <Compile Include="PlayerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuestCompletionItemTests.cs" />
+    <Compile Include="QuestTests.cs" />
+    <Compile Include="RandomNumberGeneratorTests.cs" />
+    <Compile Include="WeaponTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj">

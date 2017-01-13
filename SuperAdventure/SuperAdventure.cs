@@ -107,7 +107,7 @@ namespace SuperAdventure
 
         private void FullyHealPlayer()
         {
-            _player.CurrentHitPoints = _player.MaximumHitPoints;
+            _player.FullyHealPlayer();
             valueHitPoints.Text = _player.CurrentHitPoints.ToString();
         }
 
@@ -133,7 +133,7 @@ namespace SuperAdventure
 
         private void RewardPlayerForCompletingQuest(Location newLocation)
         {
-            richTextBoxMessages.Text += "You complete the '" + newLocation.QuestAvailableHere.Name + "' quest." + Environment.NewLine;
+            richTextBoxMessages.Text += "You completed the '" + newLocation.QuestAvailableHere.Name + "' quest." + Environment.NewLine;
 
             richTextBoxMessages.Text += "You receive: " + Environment.NewLine;
             richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardExperiencePoints.ToString() + " experience points" + Environment.NewLine;
