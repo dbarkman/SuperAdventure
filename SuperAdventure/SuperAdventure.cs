@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -11,14 +12,21 @@ namespace SuperAdventure
         private Player _player;
         private Location _location;
         private Monster _currentMonster;
+        private const string PLAYER_DATA_FILE_NAME = "PlayerData.xml";
 
         public SuperAdventure()
         {
             InitializeComponent();
 
-            _player = new Player(10, 10, 20, 0, 1);
-            _player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
-            MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+            if (File.Exists(PLAYER_DATA_FILE_NAME))
+            {
+                _player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+            }
+            else
+            {
+                _player = Player.CreateDefaultPlayer(10, 10, 20, 0, 1);
+            }
+            MoveTo(_player.CurrentLocation);
 
             valueHitPoints.Text = _player.CurrentHitPoints.ToString();
             valueGold.Text = _player.Gold.ToString();
@@ -407,6 +415,11 @@ namespace SuperAdventure
         {
             richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
             richTextBoxMessages.ScrollToCaret();
+        }
+
+        private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
         }
     }
 }

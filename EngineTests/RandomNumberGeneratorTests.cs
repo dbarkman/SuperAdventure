@@ -5,7 +5,6 @@ namespace Engine.Tests
     [TestClass()]
     public class RandomNumberGeneratorTests
     {
-        int intType = 0;
         int minimumValue = 1;
         int maximumValue = 100;
 

@@ -284,6 +284,7 @@
             this.Controls.Add(this.labelHitPoints);
             this.Name = "SuperAdventure";
             this.Text = "SuperAdventure";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SuperAdventure_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewInventory)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewQuests)).EndInit();
             this.ResumeLayout(false);
