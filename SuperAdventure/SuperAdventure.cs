@@ -28,6 +28,11 @@ namespace SuperAdventure
             }
             MoveTo(_player.CurrentLocation);
 
+            UpdatePlayerStats();
+        }
+
+        private void UpdatePlayerStats()
+        {
             valueHitPoints.Text = _player.CurrentHitPoints.ToString();
             valueGold.Text = _player.Gold.ToString();
             valueExperience.Text = _player.ExperiencePoints.ToString();
@@ -149,7 +154,7 @@ namespace SuperAdventure
             richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardItem.Name + Environment.NewLine;
 
             _player.RemoveQuestCompletionItems(newLocation.QuestAvailableHere);
-            _player.ExperiencePoints += newLocation.QuestAvailableHere.RewardExperiencePoints;
+            _player.AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
             _player.Gold += newLocation.QuestAvailableHere.RewardGold;
             _player.AddItemToInventory(newLocation.QuestAvailableHere.RewardItem);
             _player.MarkQuestCompleted(newLocation.QuestAvailableHere);
@@ -231,10 +236,27 @@ namespace SuperAdventure
                 }
             }
 
-            comboBoxWeapons.DataSource = weapons;
-            comboBoxWeapons.DisplayMember = "Name";
-            comboBoxWeapons.ValueMember = "ID";
-            comboBoxWeapons.SelectedIndex = 0;
+            if (weapons.Count == 0)
+            {
+                ToggleWeaponButtons(false);
+            }
+            else
+            {
+                comboBoxWeapons.SelectedIndexChanged -= comboBoxWeapons_SelectedIndexChanged;
+                comboBoxWeapons.DataSource = weapons;
+                comboBoxWeapons.SelectedIndexChanged += comboBoxWeapons_SelectedIndexChanged;
+                comboBoxWeapons.DisplayMember = "Name";
+                comboBoxWeapons.ValueMember = "ID";
+
+                if (_player.CurrentWeapon != null)
+                {
+                    comboBoxWeapons.SelectedItem = _player.CurrentWeapon;
+                }
+                else
+                {
+                    comboBoxWeapons.SelectedIndex = 0;
+                }
+            }
         }
 
         private void UpdatePotionList()
@@ -336,7 +358,7 @@ namespace SuperAdventure
             richTextBoxMessages.Text += "You receive " + _currentMonster.RewardExperiencePoints.ToString() + " experience points" + Environment.NewLine;
             richTextBoxMessages.Text += "You receive " + _currentMonster.RewardGold.ToString() + " gold" + Environment.NewLine;
 
-            _player.ExperiencePoints += _currentMonster.RewardExperiencePoints;
+            _player.AddExperiencePoints(_currentMonster.RewardExperiencePoints);
             _player.Gold += _currentMonster.RewardGold;
 
             LootMonster();
@@ -420,6 +442,28 @@ namespace SuperAdventure
         private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
+        }
+
+        private void comboBoxWeapons_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _player.CurrentWeapon = (Weapon)comboBoxWeapons.SelectedItem;
+        }
+
+        private void buttonNew_Click(object sender, EventArgs e)
+        {
+            _player = Player.CreateDefaultPlayer(10, 10, 20, 0, 1);
+            UpdatePlayerStats();
+            MoveTo(_player.CurrentLocation);
+        }
+
+        private void buttonYes_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonNo_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

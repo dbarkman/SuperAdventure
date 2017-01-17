@@ -8,9 +8,10 @@ namespace Engine
     public class Player : LivingCreature
     {
         public int Gold { get; set; }
-        public int ExperiencePoints { get; set; }
+        public int ExperiencePoints { get; private set; }
         public int Level { get; set; }
         public Location CurrentLocation { get; set; }
+        public Weapon CurrentWeapon { get; set; }
         public List<InventoryItem> Inventory { get; set; }
         public List<PlayerQuest> Quests { get; set; }
 
@@ -28,6 +29,7 @@ namespace Engine
         {
             Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints, level);
             player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
+            player.CurrentWeapon = (Weapon)World.ItemByID(World.ITEM_ID_RUSTY_SWORD);
             player.CurrentLocation = World.LocationByID(World.LOCATION_ID_HOME);
 
             return player;
@@ -51,6 +53,9 @@ namespace Engine
 
                 int currentLocationID = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/CurrentLocation").InnerText);
                 player.CurrentLocation = World.LocationByID(currentLocationID);
+
+                int currentWeaponID = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/CurrentWeapon").InnerText);
+                player.CurrentWeapon = (Weapon)World.ItemByID(currentWeaponID);
 
                 foreach (XmlNode node in playerData.SelectNodes("/Player/InventoryItems/InventoryItem"))
                 {
@@ -77,13 +82,18 @@ namespace Engine
             }
             catch
             {
-                return Player.CreateDefaultPlayer(10, 10, 20, 0, 1);
+                return Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
             }
         }
 
         public void FullyHealPlayer()
         {
             CurrentHitPoints = MaximumHitPoints;
+        }
+
+        public void AddExperiencePoints(int experiencePoints)
+        {
+            ExperiencePoints += experiencePoints;
         }
 
         public bool HasRequiredItemToEnterLocation(Location location)
@@ -186,6 +196,10 @@ namespace Engine
             XmlNode currentLocation = playerData.CreateElement("CurrentLocation");
             currentLocation.AppendChild(playerData.CreateTextNode(this.CurrentLocation.ID.ToString()));
             stats.AppendChild(currentLocation);
+
+            XmlNode currentWeapon = playerData.CreateElement("CurrentWeapon");
+            currentWeapon.AppendChild(playerData.CreateTextNode(this.CurrentWeapon.ID.ToString()));
+            stats.AppendChild(currentWeapon);
 
             // Create the "InventoryItems" child node to hold each InventoryItem node
             XmlNode inventoryItems = playerData.CreateElement("InventoryItems");

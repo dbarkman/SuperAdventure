@@ -49,6 +49,9 @@
             this.dataGridViewQuests = new System.Windows.Forms.DataGridView();
             this.richTextBoxLocation = new System.Windows.Forms.RichTextBox();
             this.richTextBoxMessages = new System.Windows.Forms.RichTextBox();
+            this.buttonYes = new System.Windows.Forms.Button();
+            this.buttonNo = new System.Windows.Forms.Button();
+            this.buttonNew = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewInventory)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewQuests)).BeginInit();
             this.SuspendLayout();
@@ -168,7 +171,7 @@
             // 
             // buttonGoNorth
             // 
-            this.buttonGoNorth.Location = new System.Drawing.Point(493, 433);
+            this.buttonGoNorth.Location = new System.Drawing.Point(434, 433);
             this.buttonGoNorth.Name = "buttonGoNorth";
             this.buttonGoNorth.Size = new System.Drawing.Size(75, 23);
             this.buttonGoNorth.TabIndex = 13;
@@ -178,7 +181,7 @@
             // 
             // buttonGoEast
             // 
-            this.buttonGoEast.Location = new System.Drawing.Point(573, 457);
+            this.buttonGoEast.Location = new System.Drawing.Point(515, 462);
             this.buttonGoEast.Name = "buttonGoEast";
             this.buttonGoEast.Size = new System.Drawing.Size(75, 23);
             this.buttonGoEast.TabIndex = 14;
@@ -188,7 +191,7 @@
             // 
             // buttonGoSouth
             // 
-            this.buttonGoSouth.Location = new System.Drawing.Point(493, 487);
+            this.buttonGoSouth.Location = new System.Drawing.Point(434, 491);
             this.buttonGoSouth.Name = "buttonGoSouth";
             this.buttonGoSouth.Size = new System.Drawing.Size(75, 23);
             this.buttonGoSouth.TabIndex = 15;
@@ -198,7 +201,7 @@
             // 
             // buttonGoWest
             // 
-            this.buttonGoWest.Location = new System.Drawing.Point(412, 457);
+            this.buttonGoWest.Location = new System.Drawing.Point(353, 462);
             this.buttonGoWest.Name = "buttonGoWest";
             this.buttonGoWest.Size = new System.Drawing.Size(75, 23);
             this.buttonGoWest.TabIndex = 16;
@@ -256,11 +259,44 @@
             this.richTextBoxMessages.TabIndex = 20;
             this.richTextBoxMessages.Text = "";
             // 
+            // buttonYes
+            // 
+            this.buttonYes.Location = new System.Drawing.Point(620, 433);
+            this.buttonYes.Name = "buttonYes";
+            this.buttonYes.Size = new System.Drawing.Size(75, 23);
+            this.buttonYes.TabIndex = 21;
+            this.buttonYes.Text = "Yes";
+            this.buttonYes.UseVisualStyleBackColor = true;
+            this.buttonYes.Click += new System.EventHandler(this.buttonYes_Click);
+            // 
+            // buttonNo
+            // 
+            this.buttonNo.Location = new System.Drawing.Point(620, 462);
+            this.buttonNo.Name = "buttonNo";
+            this.buttonNo.Size = new System.Drawing.Size(75, 23);
+            this.buttonNo.TabIndex = 22;
+            this.buttonNo.Text = "No";
+            this.buttonNo.UseVisualStyleBackColor = true;
+            this.buttonNo.Click += new System.EventHandler(this.buttonNo_Click);
+            // 
+            // buttonNew
+            // 
+            this.buttonNew.Location = new System.Drawing.Point(620, 491);
+            this.buttonNew.Name = "buttonNew";
+            this.buttonNew.Size = new System.Drawing.Size(75, 23);
+            this.buttonNew.TabIndex = 23;
+            this.buttonNew.Text = "New";
+            this.buttonNew.UseVisualStyleBackColor = true;
+            this.buttonNew.Click += new System.EventHandler(this.buttonNew_Click);
+            // 
             // SuperAdventure
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(719, 651);
+            this.Controls.Add(this.buttonNew);
+            this.Controls.Add(this.buttonNo);
+            this.Controls.Add(this.buttonYes);
             this.Controls.Add(this.richTextBoxMessages);
             this.Controls.Add(this.richTextBoxLocation);
             this.Controls.Add(this.dataGridViewQuests);
@@ -315,6 +351,9 @@
         private System.Windows.Forms.DataGridView dataGridViewQuests;
         private System.Windows.Forms.RichTextBox richTextBoxLocation;
         private System.Windows.Forms.RichTextBox richTextBoxMessages;
+        private System.Windows.Forms.Button buttonYes;
+        private System.Windows.Forms.Button buttonNo;
+        private System.Windows.Forms.Button buttonNew;
     }
 }
 
