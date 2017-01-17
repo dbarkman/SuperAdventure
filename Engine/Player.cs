@@ -7,27 +7,49 @@ namespace Engine
 {
     public class Player : LivingCreature
     {
-        public int Gold { get; set; }
-        public int ExperiencePoints { get; private set; }
-        public int Level { get; set; }
+        private int _gold;
+        private int _experiencePoints;
+
+        public int Gold
+        {
+            get { return _gold; }
+            set
+            {
+                _gold = value;
+                OnPropertyChanged("Gold");
+            }
+        }
+        public int ExperiencePoints
+        {
+            get { return _experiencePoints; }
+            private set
+            {
+                _experiencePoints = value;
+                OnPropertyChanged("ExperiencePoints");
+                OnPropertyChanged("Level");
+            }
+        }
+        public int Level
+        {
+            get { return ((ExperiencePoints / 100) + 1); }
+        }
         public Location CurrentLocation { get; set; }
         public Weapon CurrentWeapon { get; set; }
         public List<InventoryItem> Inventory { get; set; }
         public List<PlayerQuest> Quests { get; set; }
 
-        private Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints, int level) : base(currentHitPoints, maximumHitPoints)
+        private Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints) : base(currentHitPoints, maximumHitPoints)
         {
             Gold = gold;
             ExperiencePoints = experiencePoints;
-            Level = level;
 
             Inventory = new List<InventoryItem>();
             Quests = new List<PlayerQuest>();
         }
 
-        public static Player CreateDefaultPlayer(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints, int level)
+        public static Player CreateDefaultPlayer(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints)
         {
-            Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints, level);
+            Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints);
             player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
             player.CurrentWeapon = (Weapon)World.ItemByID(World.ITEM_ID_RUSTY_SWORD);
             player.CurrentLocation = World.LocationByID(World.LOCATION_ID_HOME);
@@ -49,7 +71,7 @@ namespace Engine
                 int experiencePoints = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/ExperiencePoints").InnerText);
                 int level = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/Level").InnerText);
 
-                Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints, level);
+                Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints);
 
                 int currentLocationID = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/CurrentLocation").InnerText);
                 player.CurrentLocation = World.LocationByID(currentLocationID);
@@ -82,7 +104,7 @@ namespace Engine
             }
             catch
             {
-                return Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+                return Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             }
         }
 
@@ -94,6 +116,7 @@ namespace Engine
         public void AddExperiencePoints(int experiencePoints)
         {
             ExperiencePoints += experiencePoints;
+            MaximumHitPoints = (Level * World.PLAYER_HIT_POINT_LEVEL_MULTIPLIER);
         }
 
         public bool HasRequiredItemToEnterLocation(Location location)
@@ -188,10 +211,6 @@ namespace Engine
             XmlNode experiencePoints = playerData.CreateElement("ExperiencePoints");
             experiencePoints.AppendChild(playerData.CreateTextNode(this.ExperiencePoints.ToString()));
             stats.AppendChild(experiencePoints);
-
-            XmlNode level = playerData.CreateElement("Level");
-            level.AppendChild(playerData.CreateTextNode(this.Level.ToString()));
-            stats.AppendChild(level);
 
             XmlNode currentLocation = playerData.CreateElement("CurrentLocation");
             currentLocation.AppendChild(playerData.CreateTextNode(this.CurrentLocation.ID.ToString()));

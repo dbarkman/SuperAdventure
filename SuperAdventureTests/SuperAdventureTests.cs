@@ -23,7 +23,7 @@ namespace SuperAdventure.Tests
             quest.QuestCompletionItems = list;
             Location location = new Location(996, "test", "test", null, quest, null);
 
-            Player player = Player.CreateDefaultPlayer(10, 10, 0, 0, 1);
+            Player player = Player.CreateDefaultPlayer(10, 10, 0, 0);
             InventoryItem ii = new InventoryItem(questItem, 1);
             player.Inventory.Add(ii);
             PlayerQuest pq = new PlayerQuest(quest);

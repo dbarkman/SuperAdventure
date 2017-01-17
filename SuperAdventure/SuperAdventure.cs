@@ -24,19 +24,15 @@ namespace SuperAdventure
             }
             else
             {
-                _player = Player.CreateDefaultPlayer(10, 10, 20, 0, 1);
+                _player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             }
+
+            valueHitPoints.DataBindings.Add("Text", _player, "CurrentHitPoints");
+            valueGold.DataBindings.Add("Text", _player, "Gold");
+            valueExperience.DataBindings.Add("Text", _player, "ExperiencePoints");
+            valueLevel.DataBindings.Add("Text", _player, "Level");
+
             MoveTo(_player.CurrentLocation);
-
-            UpdatePlayerStats();
-        }
-
-        private void UpdatePlayerStats()
-        {
-            valueHitPoints.Text = _player.CurrentHitPoints.ToString();
-            valueGold.Text = _player.Gold.ToString();
-            valueExperience.Text = _player.ExperiencePoints.ToString();
-            valueLevel.Text = _player.Level.ToString();
         }
 
         private void buttonGoNorth_Click(object sender, EventArgs e)
@@ -451,8 +447,7 @@ namespace SuperAdventure
 
         private void buttonNew_Click(object sender, EventArgs e)
         {
-            _player = Player.CreateDefaultPlayer(10, 10, 20, 0, 1);
-            UpdatePlayerStats();
+            _player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             MoveTo(_player.CurrentLocation);
         }
 

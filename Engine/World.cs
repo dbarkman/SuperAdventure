@@ -8,7 +8,8 @@ namespace Engine
         public const int DEFAULT_MAXIMUM_HIT_POINTS = 10;
         public const int DEFAULT_GOLD = 20;
         public const int DEFAULT_EXPERIENCE_POINTS = 0;
-        public const int DEFAULT_LEVEL = 1;
+
+        public const int PLAYER_HIT_POINT_LEVEL_MULTIPLIER = 10;
 
         public static readonly List<Item> Items = new List<Item>();
         public static readonly List<Monster> Monsters = new List<Monster>();

@@ -11,24 +11,22 @@ namespace Engine.Tests
         [TestMethod()]
         public void CreateDefaultPlayerTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Assert.AreEqual(player.CurrentHitPoints, World.DEFAULT_CURRENT_HIT_POINTS);
             Assert.AreEqual(player.MaximumHitPoints, World.DEFAULT_MAXIMUM_HIT_POINTS);
             Assert.AreEqual(player.Gold, World.DEFAULT_GOLD);
             Assert.AreEqual(player.ExperiencePoints, World.DEFAULT_EXPERIENCE_POINTS);
-            Assert.AreEqual(player.Level, World.DEFAULT_LEVEL);
         }
 
         [TestMethod()]
         public void CreatePlayerFromXmlStringTest()
         {
-            string xmlPlayerData = "<Player><Stats><CurrentHitPoints>" + World.DEFAULT_CURRENT_HIT_POINTS + "</CurrentHitPoints><MaximumHitPoints>" + World.DEFAULT_MAXIMUM_HIT_POINTS + "</MaximumHitPoints><Gold>" + World.DEFAULT_GOLD + "</Gold><ExperiencePoints>" + World.DEFAULT_EXPERIENCE_POINTS + "</ExperiencePoints><Level>" + World.DEFAULT_LEVEL + "</Level><CurrentLocation>" + World.LocationByID(World.LOCATION_ID_HOME) + "</CurrentLocation><CurrentWeapon>" + (Weapon)World.ItemByID(World.ITEM_ID_RUSTY_SWORD) + "</CurrentWeapon></Stats><InventoryItems><InventoryItem ID=\"1\" Quantity=\"1\" /></InventoryItems><PlayerQuests /></Player>";
+            string xmlPlayerData = "<Player><Stats><CurrentHitPoints>" + World.DEFAULT_CURRENT_HIT_POINTS + "</CurrentHitPoints><MaximumHitPoints>" + World.DEFAULT_MAXIMUM_HIT_POINTS + "</MaximumHitPoints><Gold>" + World.DEFAULT_GOLD + "</Gold><ExperiencePoints>" + World.DEFAULT_EXPERIENCE_POINTS + "</ExperiencePoints><CurrentLocation>" + World.LocationByID(World.LOCATION_ID_HOME) + "</CurrentLocation><CurrentWeapon>" + (Weapon)World.ItemByID(World.ITEM_ID_RUSTY_SWORD) + "</CurrentWeapon></Stats><InventoryItems><InventoryItem ID=\"1\" Quantity=\"1\" /></InventoryItems><PlayerQuests /></Player>";
             Player player = Player.CreatePlayerFromXmlString(xmlPlayerData);
             Assert.AreEqual(player.CurrentHitPoints, World.DEFAULT_CURRENT_HIT_POINTS);
             Assert.AreEqual(player.MaximumHitPoints, World.DEFAULT_MAXIMUM_HIT_POINTS);
             Assert.AreEqual(player.Gold, World.DEFAULT_GOLD);
             Assert.AreEqual(player.ExperiencePoints, World.DEFAULT_EXPERIENCE_POINTS);
-            Assert.AreEqual(player.Level, World.DEFAULT_LEVEL);
             Assert.AreEqual(player.CurrentLocation, World.LocationByID(World.LOCATION_ID_HOME));
             Assert.AreEqual(player.CurrentWeapon, (Weapon)World.ItemByID(World.ITEM_ID_RUSTY_SWORD));
             Assert.AreEqual(player.Inventory.Count, 1);
@@ -37,7 +35,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void FullyHealPlayerTest()
         {
-            Player player = Player.CreateDefaultPlayer(1, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(1, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             int expectedHitPoints = player.MaximumHitPoints;
             player.FullyHealPlayer();
             Assert.AreEqual(player.CurrentHitPoints, expectedHitPoints);
@@ -46,7 +44,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void AddExperiencePointsTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             player.AddExperiencePoints(10);
             Assert.AreEqual(player.ExperiencePoints, 10);
         }
@@ -54,7 +52,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void HasRequiredItemToEnterLocationTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Item item = new Item(999, "thing1", "things1");
             InventoryItem ii = new InventoryItem(item, 1);
             player.Inventory.Add(ii);
@@ -65,7 +63,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void HasThisQuestTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Quest quest = new Quest(999, "quest", "quest", 1, 1);
             PlayerQuest playerQuest = new PlayerQuest(quest);
             playerQuest.IsCompleted = false;
@@ -76,7 +74,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void CompletedThisQuestTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Quest quest = new Quest(999, "quest", "quest", 1, 1);
             PlayerQuest playerQuest = new PlayerQuest(quest);
             playerQuest.IsCompleted = true;
@@ -93,7 +91,7 @@ namespace Engine.Tests
             List<QuestCompletionItem> list = new List<QuestCompletionItem>() { questCompletionItem };
             quest.QuestCompletionItems = list;
 
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             InventoryItem inventoryItem = new InventoryItem(questItem, 1);
             player.Inventory.Add(inventoryItem);
 
@@ -109,7 +107,7 @@ namespace Engine.Tests
             List<QuestCompletionItem> list = new List<QuestCompletionItem>() { questCompletionItem };
             quest.QuestCompletionItems = list;
 
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             InventoryItem inventoryItem1 = new InventoryItem(questItem, 1);
             player.Inventory.Add(inventoryItem1);
 
@@ -121,7 +119,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void AddItemToInventoryTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Item item = new Item(999, "thing1", "things1");
 
             player.AddItemToInventory(item);
@@ -138,7 +136,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void RemoveItemFromInventoryTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Item item = new Item(999, "thing1", "things1");
             InventoryItem inventoryItem = new InventoryItem(item, 1);
 
@@ -152,7 +150,7 @@ namespace Engine.Tests
         [TestMethod()]
         public void MarkQuestCompletedTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             Quest quest = new Quest(999, "quest", "quest", 1, 1);
             PlayerQuest playerQuest = new PlayerQuest(quest);
             playerQuest.IsCompleted = false;
@@ -164,9 +162,9 @@ namespace Engine.Tests
         [TestMethod()]
         public void ToXmlStringTest()
         {
-            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS, World.DEFAULT_LEVEL);
+            Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             string xmlDocument = player.ToXmlString();
-            Assert.AreEqual(xmlDocument, "<Player><Stats><CurrentHitPoints>10</CurrentHitPoints><MaximumHitPoints>10</MaximumHitPoints><Gold>20</Gold><ExperiencePoints>0</ExperiencePoints><Level>1</Level><CurrentLocation>1</CurrentLocation><CurrentWeapon>1</CurrentWeapon></Stats><InventoryItems><InventoryItem ID=\"1\" Quantity=\"1\" /></InventoryItems><PlayerQuests /></Player>");
+            Assert.AreEqual(xmlDocument, "<Player><Stats><CurrentHitPoints>10</CurrentHitPoints><MaximumHitPoints>10</MaximumHitPoints><Gold>20</Gold><ExperiencePoints>0</ExperiencePoints><CurrentLocation>1</CurrentLocation><CurrentWeapon>1</CurrentWeapon></Stats><InventoryItems><InventoryItem ID=\"1\" Quantity=\"1\" /></InventoryItems><PlayerQuests /></Player>");
         }
     }
 }
