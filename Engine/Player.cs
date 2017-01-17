@@ -69,7 +69,6 @@ namespace Engine
                 int maximumHitPoints = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/MaximumHitPoints").InnerText);
                 int gold = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/Gold").InnerText);
                 int experiencePoints = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/ExperiencePoints").InnerText);
-                int level = Convert.ToInt32(playerData.SelectSingleNode("/Player/Stats/Level").InnerText);
 
                 Player player = new Player(currentHitPoints, maximumHitPoints, gold, experiencePoints);
 
