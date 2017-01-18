@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 
 using Engine;
@@ -20,7 +22,8 @@ namespace SuperAdventure
 
             if (File.Exists(PLAYER_DATA_FILE_NAME))
             {
-                _player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+                _player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
+                //_player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
             }
             else
             {
@@ -32,7 +35,82 @@ namespace SuperAdventure
             valueExperience.DataBindings.Add("Text", _player, "ExperiencePoints");
             valueLevel.DataBindings.Add("Text", _player, "Level");
 
+            dataGridViewInventory.RowHeadersVisible = false;
+            dataGridViewInventory.AutoGenerateColumns = false;
+
+            dataGridViewInventory.DataSource = _player.Inventory;
+
+            dataGridViewInventory.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Name",
+                Width = 197,
+                DataPropertyName = "Description"
+            });
+
+            dataGridViewInventory.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Quantity",
+                DataPropertyName = "Quantity"
+            });
+
+            dataGridViewQuests.RowHeadersVisible = false;
+            dataGridViewQuests.AutoGenerateColumns = false;
+
+            dataGridViewQuests.DataSource = _player.Quests;
+
+            dataGridViewQuests.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Name",
+                Width = 197,
+                DataPropertyName = "Name"
+            });
+
+            dataGridViewQuests.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Done?",
+                DataPropertyName = "IsCompleted"
+            });
+
+            comboBoxWeapons.DataSource = _player.Weapons;
+            comboBoxWeapons.DisplayMember = "Name";
+            comboBoxWeapons.ValueMember = "Id";
+
+            if (_player.CurrentWeapon != null)
+            {
+                comboBoxWeapons.SelectedItem = _player.CurrentWeapon;
+            }
+
+            comboBoxWeapons.SelectedIndexChanged += comboBoxWeapons_SelectedIndexChanged;
+
+            comboBoxPotions.DataSource = _player.Potions;
+            comboBoxPotions.DisplayMember = "Name";
+            comboBoxPotions.ValueMember = "Id";
+
+            _player.PropertyChanged += PlayerOnPropertyChanged;
+
             MoveTo(_player.CurrentLocation);
+        }
+
+        private void PlayerOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            if (propertyChangedEventArgs.PropertyName == "Weapons")
+            {
+                comboBoxWeapons.DataSource = _player.Weapons;
+                if (!_player.Weapons.Any())
+                {
+                    comboBoxWeapons.Visible = false;
+                    buttonUseWeapon.Visible = false;
+                }
+            }
+            if (propertyChangedEventArgs.PropertyName == "Potions")
+            {
+                comboBoxPotions.DataSource = _player.Potions;
+                if (!_player.Potions.Any())
+                {
+                    comboBoxPotions.Visible = false;
+                    buttonUsePotion.Visible = false;
+                }
+            }
         }
 
         private void buttonGoNorth_Click(object sender, EventArgs e)
@@ -97,21 +175,20 @@ namespace SuperAdventure
             {
                 SpawnNewMonster(newLocation);
                 labelSelectAction.Visible = true;
-                ToggleWeaponButtons(true);
-                TogglePotionButtons(true);
+                comboBoxWeapons.Visible = _player.Weapons.Any();
+                buttonUseWeapon.Visible = _player.Weapons.Any();
+                comboBoxPotions.Visible = _player.Potions.Any();
+                buttonUsePotion.Visible = _player.Potions.Any();
             }
             else
             {
                 _currentMonster = null;
                 labelSelectAction.Visible = false;
-                ToggleWeaponButtons(false);
-                TogglePotionButtons(false);
+                comboBoxWeapons.Visible = false;
+                buttonUseWeapon.Visible = false;
+                comboBoxPotions.Visible = false;
+                buttonUsePotion.Visible = false;
             }
-
-            UpdateInventoryList();
-            UpdateQuestList();
-            UpdateWeaponList();
-            UpdatePotionList();
         }
 
         private void FullyHealPlayer()
@@ -172,117 +249,6 @@ namespace SuperAdventure
             }
         }
 
-        private void ToggleWeaponButtons(bool visible)
-        {
-            comboBoxWeapons.Visible = visible;
-            buttonUseWeapon.Visible = visible;
-        }
-
-        private void TogglePotionButtons(bool visible)
-        {
-            comboBoxPotions.Visible = visible;
-            buttonUsePotion.Visible = visible;
-        }
-
-        private void UpdateInventoryList()
-        {
-            dataGridViewInventory.RowHeadersVisible = false;
-            dataGridViewInventory.ColumnCount = 2;
-            dataGridViewInventory.Columns[0].Name = "Name";
-            dataGridViewInventory.Columns[0].Width = 197;
-            dataGridViewInventory.Columns[1].Name = "Quantity";
-            dataGridViewInventory.Rows.Clear();
-
-            foreach (InventoryItem inventoryItem in _player.Inventory)
-            {
-                if (inventoryItem.Quantity > 0)
-                {
-                    dataGridViewInventory.Rows.Add(new[] { inventoryItem.Details.Name, inventoryItem.Quantity.ToString() });
-                }
-            }
-        }
-
-        private void UpdateQuestList()
-        {
-            dataGridViewQuests.RowHeadersVisible = false;
-            dataGridViewQuests.ColumnCount = 2;
-            dataGridViewQuests.Columns[0].Name = "Name";
-            dataGridViewQuests.Columns[0].Width = 197;
-            dataGridViewQuests.Columns[1].Name = "Done?";
-            dataGridViewQuests.Rows.Clear();
-
-            foreach (PlayerQuest playerQuest in _player.Quests)
-            {
-                dataGridViewQuests.Rows.Add(new[] { playerQuest.Details.Name, playerQuest.IsCompleted.ToString() });
-            }
-        }
-
-        private void UpdateWeaponList()
-        {
-            List<Weapon> weapons = new List<Weapon>();
-
-            foreach (InventoryItem inventoryItem in _player.Inventory)
-            {
-                if (inventoryItem.Details is Weapon)
-                {
-                    if (inventoryItem.Quantity > 0)
-                    {
-                        weapons.Add((Weapon)inventoryItem.Details);
-                    }
-                }
-            }
-
-            if (weapons.Count == 0)
-            {
-                ToggleWeaponButtons(false);
-            }
-            else
-            {
-                comboBoxWeapons.SelectedIndexChanged -= comboBoxWeapons_SelectedIndexChanged;
-                comboBoxWeapons.DataSource = weapons;
-                comboBoxWeapons.SelectedIndexChanged += comboBoxWeapons_SelectedIndexChanged;
-                comboBoxWeapons.DisplayMember = "Name";
-                comboBoxWeapons.ValueMember = "ID";
-
-                if (_player.CurrentWeapon != null)
-                {
-                    comboBoxWeapons.SelectedItem = _player.CurrentWeapon;
-                }
-                else
-                {
-                    comboBoxWeapons.SelectedIndex = 0;
-                }
-            }
-        }
-
-        private void UpdatePotionList()
-        {
-            List<HealingPotion> healingPotions = new List<HealingPotion>();
-
-            foreach (InventoryItem inventoryItem in _player.Inventory)
-            {
-                if (inventoryItem.Details is HealingPotion)
-                {
-                    if (inventoryItem.Quantity > 0)
-                    {
-                        healingPotions.Add((HealingPotion)inventoryItem.Details);
-                    }
-                }
-            }
-
-            if (healingPotions.Count == 0)
-            {
-                TogglePotionButtons(false);
-            }
-            else
-            {
-                comboBoxPotions.DataSource = healingPotions;
-                comboBoxPotions.DisplayMember = "Name";
-                comboBoxPotions.ValueMember = "ID";
-                comboBoxPotions.SelectedIndex = 0;
-            }
-        }
-
         private void buttonUseWeapon_Click(object sender, EventArgs e)
         {
             PlayerAttacks();
@@ -316,8 +282,6 @@ namespace SuperAdventure
             }
 
             valueHitPoints.Text = _player.CurrentHitPoints.ToString();
-            UpdateInventoryList();
-            UpdatePotionList();
 
             ScrollToBottomOfMessages();
         }
@@ -363,10 +327,6 @@ namespace SuperAdventure
             valueGold.Text = _player.Gold.ToString();
             valueExperience.Text = _player.ExperiencePoints.ToString();
             valueLevel.Text = _player.Level.ToString();
-
-            UpdateInventoryList();
-            UpdateWeaponList();
-            UpdatePotionList();
 
             richTextBoxMessages.Text += Environment.NewLine;
 

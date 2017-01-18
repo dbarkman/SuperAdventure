@@ -65,6 +65,7 @@
     <Compile Include="QuestTests.cs" />
     <Compile Include="RandomNumberGeneratorTests.cs" />
     <Compile Include="WeaponTests.cs" />
+    <Compile Include="WorldTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj">

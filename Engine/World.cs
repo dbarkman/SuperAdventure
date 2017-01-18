@@ -4,17 +4,17 @@ namespace Engine
 {
     public static class World
     {
+        public static readonly List<Item> Items = new List<Item>();
+        public static readonly List<Monster> Monsters = new List<Monster>();
+        public static readonly List<Quest> Quests = new List<Quest>();
+        public static readonly List<Location> Locations = new List<Location>();
+
         public const int DEFAULT_CURRENT_HIT_POINTS = 10;
         public const int DEFAULT_MAXIMUM_HIT_POINTS = 10;
         public const int DEFAULT_GOLD = 20;
         public const int DEFAULT_EXPERIENCE_POINTS = 0;
 
         public const int PLAYER_HIT_POINT_LEVEL_MULTIPLIER = 10;
-
-        public static readonly List<Item> Items = new List<Item>();
-        public static readonly List<Monster> Monsters = new List<Monster>();
-        public static readonly List<Quest> Quests = new List<Quest>();
-        public static readonly List<Location> Locations = new List<Location>();
 
         public const int ITEM_ID_RUSTY_SWORD = 1;
         public const int ITEM_ID_RAT_TAIL = 2;

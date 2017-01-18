@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Xml;
 
@@ -19,6 +20,7 @@ namespace Engine
                 OnPropertyChanged("Gold");
             }
         }
+
         public int ExperiencePoints
         {
             get { return _experiencePoints; }
@@ -29,22 +31,34 @@ namespace Engine
                 OnPropertyChanged("Level");
             }
         }
+
         public int Level
         {
             get { return ((ExperiencePoints / 100) + 1); }
         }
+
+        public List<Weapon> Weapons
+        {
+            get { return Inventory.Where(x => x.Details is Weapon).Select(x => x.Details as Weapon).ToList(); }
+        }
+
+        public List<HealingPotion> Potions
+        {
+            get { return Inventory.Where(x => x.Details is HealingPotion).Select(x => x.Details as HealingPotion).ToList(); }
+        }
+
         public Location CurrentLocation { get; set; }
         public Weapon CurrentWeapon { get; set; }
-        public List<InventoryItem> Inventory { get; set; }
-        public List<PlayerQuest> Quests { get; set; }
+        public BindingList<InventoryItem> Inventory { get; set; }
+        public BindingList<PlayerQuest> Quests { get; set; }
 
         private Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints) : base(currentHitPoints, maximumHitPoints)
         {
             Gold = gold;
             ExperiencePoints = experiencePoints;
 
-            Inventory = new List<InventoryItem>();
-            Quests = new List<PlayerQuest>();
+            Inventory = new BindingList<InventoryItem>();
+            Quests = new BindingList<PlayerQuest>();
         }
 
         public static Player CreateDefaultPlayer(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints)
@@ -121,12 +135,12 @@ namespace Engine
         public bool HasRequiredItemToEnterLocation(Location location)
         {
             if (location.ItemRequiredToEnter == null) return true;
-            return Inventory.Exists(inventoryItem => inventoryItem.Details.ID == location.ItemRequiredToEnter.ID);
+            return Inventory.Any(inventoryItem => inventoryItem.Details.ID == location.ItemRequiredToEnter.ID);
         }
 
         public bool HasThisQuest(Quest quest)
         {
-            return Quests.Exists(playerQuest => playerQuest.Details.ID == quest.ID);
+            return Quests.Any(playerQuest => playerQuest.Details.ID == quest.ID);
         }
 
         public bool CompletedThisQuest(Quest quest)
@@ -140,7 +154,7 @@ namespace Engine
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                if (!Inventory.Exists(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
+                if (!Inventory.Any(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
                 {
                     return false;
                 }
@@ -152,34 +166,51 @@ namespace Engine
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
-                if (item != null) item.Quantity -= qci.Quantity;
+                InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
+                if (inventoryItem != null) RemoveItemFromInventory(inventoryItem.Details, qci.Quantity);
             }
         }
 
-        public void AddItemToInventory(Item item)
+        public void AddItemToInventory(Item item, int quantity = 1)
         {
             InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == item.ID);
             if (inventoryItem == null)
             {
-                Inventory.Add(new InventoryItem(item, 1));
+                Inventory.Add(new InventoryItem(item, quantity));
             }
             else
             {
-                inventoryItem.Quantity++;
+                inventoryItem.Quantity += quantity;
             }
+
+            RaiseInventoryChangedEvent(item);
         }
 
-        public void RemoveItemFromInventory(Item item)
+        public void RemoveItemFromInventory(Item item, int quantity = 1)
         {
             InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == item.ID);
-            if (inventoryItem != null) inventoryItem.Quantity--;
+            if (inventoryItem != null) inventoryItem.Quantity -= quantity;
+            if (inventoryItem.Quantity <= 0) Inventory.Remove(inventoryItem);
+
+            RaiseInventoryChangedEvent(item);
         }
 
         public void MarkQuestCompleted(Quest quest)
         {
             PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
             if (playerQuest != null) playerQuest.IsCompleted = true;
+        }
+
+        private void RaiseInventoryChangedEvent(Item item)
+        {
+            if (item is Weapon)
+            {
+                OnPropertyChanged("Weapons");
+            }
+            if (item is HealingPotion)
+            {
+                OnPropertyChanged("Potions");
+            }
         }
 
         public string ToXmlString()

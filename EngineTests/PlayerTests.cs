@@ -1,5 +1,4 @@
-﻿using Engine;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -112,8 +111,7 @@ namespace Engine.Tests
             player.Inventory.Add(inventoryItem1);
 
             player.RemoveQuestCompletionItems(quest);
-            InventoryItem item = player.Inventory.SingleOrDefault(inventoryItem2 => inventoryItem2.Details.ID == questCompletionItem.Details.ID);
-            Assert.AreEqual(item.Quantity, 0);
+            Assert.AreEqual(player.Inventory.Count, 1);
         }
 
         [TestMethod()]
@@ -142,9 +140,7 @@ namespace Engine.Tests
 
             player.Inventory.Add(inventoryItem);
             player.RemoveItemFromInventory(item);
-            inventoryItem = player.Inventory.SingleOrDefault(ii => ii.Details.ID == 999);
-            Assert.AreEqual(inventoryItem.Quantity, 0);
-            Assert.AreEqual(player.Inventory.Count, 2);
+            Assert.AreEqual(player.Inventory.Count, 1);
         }
 
         [TestMethod()]

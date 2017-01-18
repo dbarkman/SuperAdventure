@@ -34,10 +34,9 @@ namespace SuperAdventure.Tests
             privateObject.SetField("_location", location);
             privateObject.Invoke("RewardPlayerForCompletingQuest", location);
 
-            InventoryItem item = player.Inventory.SingleOrDefault(i => i.Details.ID == 998);
-            Assert.AreEqual(item.Quantity, 0);
-            item = player.Inventory.SingleOrDefault(i => i.Details.ID == 997);
+            InventoryItem item = player.Inventory.SingleOrDefault(i => i.Details.ID == 997);
             Assert.AreEqual(item.Quantity, 1);
+            Assert.AreEqual(player.Inventory.Count, 2);
 
             Assert.AreEqual(player.ExperiencePoints, 1);
             Assert.AreEqual(player.Gold, 1);
