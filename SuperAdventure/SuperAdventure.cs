@@ -191,7 +191,7 @@ namespace SuperAdventure
 
             _player.CurrentLocation = newLocation;
 
-            FullyHealPlayer();
+            _player.FullyHealPlayer();
 
             if (newLocation.QuestAvailableHere != null)
             {
@@ -210,25 +210,24 @@ namespace SuperAdventure
 
             if (_player.CurrentLocation.MonsterLivingHere != null)
             {
-                richTextBoxMessages.Text += "You see a " + _player.CurrentLocation.MonsterLivingHere.Name + Environment.NewLine;
-                richTextBoxMessages.Text += Environment.NewLine;
-
-                Monster standardMonster = World.MonsterByID(_player.CurrentLocation.MonsterLivingHere.ID);
-
-                _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
-                    standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
-
-                foreach (LootItem lootItem in standardMonster.LootTable)
-                {
-                    _currentMonster.LootTable.Add(lootItem);
-                }
+                SpawnMonster();
             }
         }
 
-        private void FullyHealPlayer()
+        private void SpawnMonster()
         {
-            _player.FullyHealPlayer();
-            valueHitPoints.Text = _player.CurrentHitPoints.ToString();
+            richTextBoxMessages.Text += "You see a " + _player.CurrentLocation.MonsterLivingHere.Name + Environment.NewLine;
+            richTextBoxMessages.Text += Environment.NewLine;
+
+            Monster standardMonster = World.MonsterByID(_player.CurrentLocation.MonsterLivingHere.ID);
+
+            _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
+                standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
+
+            foreach (LootItem lootItem in standardMonster.LootTable)
+            {
+                _currentMonster.LootTable.Add(lootItem);
+            }
         }
 
         private void AssignPlayerQuest(Location newLocation)
@@ -277,44 +276,6 @@ namespace SuperAdventure
         {
             HealingPotion potion = (HealingPotion)comboBoxPotions.SelectedItem;
             _player.UsePotion(potion);
-        }
-
-        private void LootMonster()
-        {
-            List<InventoryItem> lootedItems = new List<InventoryItem>();
-
-            foreach (LootItem lootItem in _currentMonster.LootTable)
-            {
-                if (RandomNumberGenerator.NumberBetween(1, 100) <= lootItem.DropPercentage)
-                {
-                    lootedItems.Add(new InventoryItem(lootItem.Details, 1));
-                }
-            }
-
-            if (lootedItems.Count == 0)
-            {
-                foreach (LootItem lootItem in _currentMonster.LootTable)
-                {
-                    if (lootItem.IsDefaultItem)
-                    {
-                        lootedItems.Add(new InventoryItem(lootItem.Details, 1));
-                    }
-                }
-            }
-
-            foreach (InventoryItem inventoryItem in lootedItems)
-            {
-                _player.AddItemToInventory(inventoryItem.Details);
-
-                if (inventoryItem.Quantity == 1)
-                {
-                    richTextBoxMessages.Text += "You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.Name + Environment.NewLine;
-                }
-                else
-                {
-                    richTextBoxMessages.Text += "You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.NamePlural + Environment.NewLine;
-                }
-            }
         }
 
         private void ScrollToBottomOfMessages()
