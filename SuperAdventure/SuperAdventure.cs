@@ -88,7 +88,22 @@ namespace SuperAdventure
 
             _player.PropertyChanged += PlayerOnPropertyChanged;
 
+            _player.OnMessage += DisplayMessage;
+
             MoveTo(_player.CurrentLocation);
+        }
+
+        private void DisplayMessage(object sender, MessageEventArgs messageEventArgs)
+        {
+            richTextBoxMessages.Text += messageEventArgs.Message + Environment.NewLine;
+
+            if (messageEventArgs.AddExtraNewLine)
+            {
+                richTextBoxMessages.Text += Environment.NewLine;
+            }
+
+            richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
+            richTextBoxMessages.ScrollToCaret();
         }
 
         private void PlayerOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -102,6 +117,7 @@ namespace SuperAdventure
                     buttonUseWeapon.Visible = false;
                 }
             }
+
             if (propertyChangedEventArgs.PropertyName == "Potions")
             {
                 comboBoxPotions.DataSource = _player.Potions;
@@ -111,26 +127,55 @@ namespace SuperAdventure
                     buttonUsePotion.Visible = false;
                 }
             }
+
+            if (propertyChangedEventArgs.PropertyName == "CurrentLocation")
+            {
+                buttonGoNorth.Visible = (_player.CurrentLocation.LocationToNorth != null);
+                buttonGoEast.Visible = (_player.CurrentLocation.LocationToEast != null);
+                buttonGoSouth.Visible = (_player.CurrentLocation.LocationToSouth != null);
+                buttonGoWest.Visible = (_player.CurrentLocation.LocationToWest != null);
+
+                richTextBoxLocation.Text = _player.CurrentLocation.Name + Environment.NewLine;
+                richTextBoxLocation.Text += _player.CurrentLocation.Description + Environment.NewLine;
+
+                if (_player.CurrentLocation.MonsterLivingHere != null)
+                {
+                    labelSelectAction.Visible = true;
+                    comboBoxWeapons.Visible = _player.Weapons.Any();
+                    buttonUseWeapon.Visible = _player.Weapons.Any();
+                    comboBoxPotions.Visible = _player.Potions.Any();
+                    buttonUsePotion.Visible = _player.Potions.Any();
+                }
+                else
+                {
+                    _currentMonster = null;
+                    labelSelectAction.Visible = false;
+                    comboBoxWeapons.Visible = false;
+                    buttonUseWeapon.Visible = false;
+                    comboBoxPotions.Visible = false;
+                    buttonUsePotion.Visible = false;
+                }
+            }
         }
 
         private void buttonGoNorth_Click(object sender, EventArgs e)
         {
-            MoveTo(_player.CurrentLocation.LocationToNorth);
+            _player.MoveNorth();
         }
 
         private void buttonGoEast_Click(object sender, EventArgs e)
         {
-            MoveTo(_player.CurrentLocation.LocationToEast);
+            _player.MoveEast();
         }
 
         private void buttonGoSouth_Click(object sender, EventArgs e)
         {
-            MoveTo(_player.CurrentLocation.LocationToSouth);
+            _player.MoveSouth();
         }
 
         private void buttonGoWest_Click(object sender, EventArgs e)
         {
-            MoveTo(_player.CurrentLocation.LocationToWest);
+            _player.MoveWest();
         }
 
         private void MoveTo(Location newLocation, int respawn = 0)
@@ -148,14 +193,6 @@ namespace SuperAdventure
 
             FullyHealPlayer();
 
-            buttonGoNorth.Visible = (newLocation.LocationToNorth != null);
-            buttonGoEast.Visible = (newLocation.LocationToEast != null);
-            buttonGoSouth.Visible = (newLocation.LocationToSouth != null);
-            buttonGoWest.Visible = (newLocation.LocationToWest != null);
-
-            richTextBoxLocation.Text = newLocation.Name + Environment.NewLine;
-            richTextBoxLocation.Text += newLocation.Description + Environment.NewLine;
-
             if (newLocation.QuestAvailableHere != null)
             {
                 if (_player.HasThisQuest(newLocation.QuestAvailableHere))
@@ -171,23 +208,20 @@ namespace SuperAdventure
                 }
             }
 
-            if (newLocation.MonsterLivingHere != null)
+            if (_player.CurrentLocation.MonsterLivingHere != null)
             {
-                SpawnNewMonster(newLocation);
-                labelSelectAction.Visible = true;
-                comboBoxWeapons.Visible = _player.Weapons.Any();
-                buttonUseWeapon.Visible = _player.Weapons.Any();
-                comboBoxPotions.Visible = _player.Potions.Any();
-                buttonUsePotion.Visible = _player.Potions.Any();
-            }
-            else
-            {
-                _currentMonster = null;
-                labelSelectAction.Visible = false;
-                comboBoxWeapons.Visible = false;
-                buttonUseWeapon.Visible = false;
-                comboBoxPotions.Visible = false;
-                buttonUsePotion.Visible = false;
+                richTextBoxMessages.Text += "You see a " + _player.CurrentLocation.MonsterLivingHere.Name + Environment.NewLine;
+                richTextBoxMessages.Text += Environment.NewLine;
+
+                Monster standardMonster = World.MonsterByID(_player.CurrentLocation.MonsterLivingHere.ID);
+
+                _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
+                    standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
+
+                foreach (LootItem lootItem in standardMonster.LootTable)
+                {
+                    _currentMonster.LootTable.Add(lootItem);
+                }
             }
         }
 
@@ -233,57 +267,16 @@ namespace SuperAdventure
             _player.MarkQuestCompleted(newLocation.QuestAvailableHere);
         }
 
-        private void SpawnNewMonster(Location location)
-        {
-            richTextBoxMessages.Text += "You see a " + location.MonsterLivingHere.Name + Environment.NewLine;
-            richTextBoxMessages.Text += Environment.NewLine;
-
-            Monster standardMonster = World.MonsterByID(location.MonsterLivingHere.ID);
-
-            _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
-                standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
-
-            foreach (LootItem lootItem in standardMonster.LootTable)
-            {
-                _currentMonster.LootTable.Add(lootItem);
-            }
-        }
-
         private void buttonUseWeapon_Click(object sender, EventArgs e)
         {
-            PlayerAttacks();
-
-            if (_currentMonster.CurrentHitPoints <= 0)
-            {
-                MonsterDefeated();
-            }
-            else
-            {
-                MonsterAttacks();
-
-                if (_player.CurrentHitPoints <= 0)
-                {
-                    PlayerDefeated();
-                }
-            }
-
-            ScrollToBottomOfMessages();
+            Weapon weapon = (Weapon)comboBoxWeapons.SelectedItem;
+            _player.UseWeapon(weapon);
         }
 
         private void buttonUsePotion_Click(object sender, EventArgs e)
         {
-            PlayerDrinksPotion();
-
-            MonsterAttacks();
-
-            if (_player.CurrentHitPoints <= 0)
-            {
-                PlayerDefeated();
-            }
-
-            valueHitPoints.Text = _player.CurrentHitPoints.ToString();
-
-            ScrollToBottomOfMessages();
+            HealingPotion potion = (HealingPotion)comboBoxPotions.SelectedItem;
+            _player.UsePotion(potion);
         }
 
         private void PlayerDrinksPotion()

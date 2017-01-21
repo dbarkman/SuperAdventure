@@ -10,6 +10,10 @@ namespace Engine
     {
         private int _gold;
         private int _experiencePoints;
+        private Location _currentLocation;
+        private Monster _currentMonster;
+
+        public event EventHandler<MessageEventArgs> OnMessage;
 
         public int Gold
         {
@@ -47,7 +51,16 @@ namespace Engine
             get { return Inventory.Where(x => x.Details is HealingPotion).Select(x => x.Details as HealingPotion).ToList(); }
         }
 
-        public Location CurrentLocation { get; set; }
+        public Location CurrentLocation
+        {
+            get { return _currentLocation; }
+            set
+            {
+                _currentLocation = value;
+                OnPropertyChanged("CurrentLocation");
+            }
+        }
+
         public Weapon CurrentWeapon { get; set; }
         public BindingList<InventoryItem> Inventory { get; set; }
         public BindingList<PlayerQuest> Quests { get; set; }
@@ -118,6 +131,14 @@ namespace Engine
             catch
             {
                 return Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
+            }
+        }
+
+        private void RaiseMessage(string message, bool addExtraNewLine = false)
+        {
+            if (OnMessage != null)
+            {
+                OnMessage(this, new Engine.MessageEventArgs(message, addExtraNewLine));
             }
         }
 
@@ -212,6 +233,13 @@ namespace Engine
                 OnPropertyChanged("Potions");
             }
         }
+
+        public void MoveNorth() { }
+        public void MoveEast() { }
+        public void MoveSouth() { }
+        public void MoveWest() { }
+        public void UseWeapon(Weapon weapon) { }
+        public void UsePotion(HealingPotion healingPotion) { }
 
         public string ToXmlString()
         {
