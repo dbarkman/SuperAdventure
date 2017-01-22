@@ -137,15 +137,13 @@ namespace Engine
 
         private void RaiseMessage(string message, bool addExtraNewLine = false, bool clearTextBox = false)
         {
-            if (OnMessage != null)
-            {
-                OnMessage(this, new Engine.MessageEventArgs(message, addExtraNewLine, clearTextBox));
-            }
+            OnMessage?.Invoke(this, new MessageEventArgs(message, addExtraNewLine, clearTextBox));
         }
 
-        public void FullyHealPlayer()
+        private void RaiseInventoryChangedEvent(Item item)
         {
-            CurrentHitPoints = MaximumHitPoints;
+            if (item is Weapon) OnPropertyChanged("Weapons");
+            if (item is HealingPotion) OnPropertyChanged("Potions");
         }
 
         public void AddExperiencePoints(int experiencePoints)
@@ -153,52 +151,6 @@ namespace Engine
             ExperiencePoints += experiencePoints;
             MaximumHitPoints = (Level * World.PLAYER_HIT_POINT_LEVEL_MULTIPLIER);
         }
-
-        public bool HasRequiredItemToEnterLocation(Location location)
-        {
-            if (location.ItemRequiredToEnter == null) return true;
-            return Inventory.Any(inventoryItem => inventoryItem.Details.ID == location.ItemRequiredToEnter.ID);
-        }
-
-        public bool HasThisQuest(Quest quest)
-        {
-            return Quests.Any(playerQuest => playerQuest.Details.ID == quest.ID);
-        }
-
-        public bool CompletedThisQuest(Quest quest)
-        {
-            PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
-            if (playerQuest == null) return false;
-            return playerQuest.IsCompleted;
-        }
-
-        public bool HasAllQuestCompletionItems(Quest quest)
-        {
-            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
-            {
-                if (!Inventory.Any(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public void RemoveQuestCompletionItems(Quest quest)
-        {
-            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
-            {
-                InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
-                if (inventoryItem != null) RemoveItemFromInventory(inventoryItem.Details, qci.Quantity);
-            }
-        }
-
-        public void MarkQuestCompleted(Quest quest)
-        {
-            PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
-            if (playerQuest != null) playerQuest.IsCompleted = true;
-        }
-
 
         public void AddItemToInventory(Item item, int quantity = 1)
         {
@@ -222,18 +174,6 @@ namespace Engine
             if (inventoryItem.Quantity <= 0) Inventory.Remove(inventoryItem);
 
             RaiseInventoryChangedEvent(item);
-        }
-
-        private void RaiseInventoryChangedEvent(Item item)
-        {
-            if (item is Weapon)
-            {
-                OnPropertyChanged("Weapons");
-            }
-            if (item is HealingPotion)
-            {
-                OnPropertyChanged("Potions");
-            }
         }
 
         public void Move(Location location)
@@ -273,6 +213,146 @@ namespace Engine
             }
         }
 
+        private void MoveTo(Location newLocation, bool respawn = false)
+        {
+            if (!HasRequiredItemToEnterLocation(newLocation))
+            {
+                RaiseMessage("You must have an " + newLocation.ItemRequiredToEnter.Name + " to enter this location.", true);
+                return;
+            }
+
+            CurrentLocation = newLocation;
+
+            if (!respawn) RaiseMessage("", false, true);
+
+            FullyHealPlayer();
+
+            if (CurrentLocation.QuestAvailableHere != null)
+            {
+                if (HasThisQuest(CurrentLocation.QuestAvailableHere))
+                {
+                    if (!CompletedThisQuest(CurrentLocation.QuestAvailableHere) && HasAllQuestCompletionItems(CurrentLocation.QuestAvailableHere))
+                    {
+                        RewardPlayerForCompletingQuest(CurrentLocation);
+                    }
+                }
+                else
+                {
+                    AssignPlayerQuest(CurrentLocation);
+                }
+            }
+
+            if (CurrentLocation.MonsterLivingHere != null)
+            {
+                SpawnNewMonster();
+            }
+            else
+            {
+                _currentMonster = null;
+            }
+        }
+
+        public bool HasRequiredItemToEnterLocation(Location location)
+        {
+            if (location.ItemRequiredToEnter == null) return true;
+            return Inventory.Any(inventoryItem => inventoryItem.Details.ID == location.ItemRequiredToEnter.ID);
+        }
+
+        public void FullyHealPlayer()
+        {
+            CurrentHitPoints = MaximumHitPoints;
+        }
+
+        public bool HasThisQuest(Quest quest)
+        {
+            return Quests.Any(playerQuest => playerQuest.Details.ID == quest.ID);
+        }
+
+        public bool CompletedThisQuest(Quest quest)
+        {
+            PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
+            if (playerQuest == null) return false;
+            return playerQuest.IsCompleted;
+        }
+
+        public bool HasAllQuestCompletionItems(Quest quest)
+        {
+            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
+            {
+                if (!Inventory.Any(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void RewardPlayerForCompletingQuest(Location newLocation)
+        {
+            RaiseMessage("You completed the '" + newLocation.QuestAvailableHere.Name + "' quest.", true);
+
+            RaiseMessage("You receive: ", false);
+            RaiseMessage(newLocation.QuestAvailableHere.RewardExperiencePoints.ToString() + " experience points", false);
+            RaiseMessage(newLocation.QuestAvailableHere.RewardGold.ToString() + " gold", false);
+            RaiseMessage(newLocation.QuestAvailableHere.RewardItem.Name, true);
+
+            RemoveQuestCompletionItems(newLocation.QuestAvailableHere);
+            AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
+            Gold += newLocation.QuestAvailableHere.RewardGold;
+            AddItemToInventory(newLocation.QuestAvailableHere.RewardItem);
+            MarkQuestCompleted(newLocation.QuestAvailableHere);
+        }
+
+        public void RemoveQuestCompletionItems(Quest quest)
+        {
+            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
+            {
+                InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
+                if (inventoryItem != null) RemoveItemFromInventory(inventoryItem.Details, qci.Quantity);
+            }
+        }
+
+        public void MarkQuestCompleted(Quest quest)
+        {
+            PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
+            if (playerQuest != null) playerQuest.IsCompleted = true;
+        }
+
+        private void AssignPlayerQuest(Location newLocation)
+        {
+            RaiseMessage("You receive the " + newLocation.QuestAvailableHere.Name + " quest.", true);
+            RaiseMessage(newLocation.QuestAvailableHere.Description, true);
+            RaiseMessage("To complete it, return with:", false);
+            foreach (QuestCompletionItem qci in newLocation.QuestAvailableHere.QuestCompletionItems)
+            {
+                if (qci.Quantity == 1)
+                {
+                    RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.Name, false);
+                }
+                else
+                {
+                    RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.NamePlural, false);
+                }
+            }
+
+            Quests.Add(new PlayerQuest(newLocation.QuestAvailableHere));
+        }
+
+        private void SpawnNewMonster()
+        {
+            RaiseMessage("You see a " + CurrentLocation.MonsterLivingHere.Name, true);
+
+            Monster standardMonster = World.MonsterByID(CurrentLocation.MonsterLivingHere.ID);
+
+            _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
+                standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
+
+            foreach (LootItem lootItem in standardMonster.LootTable)
+            {
+                _currentMonster.LootTable.Add(lootItem);
+            }
+        }
+
         public void UseWeapon(Weapon weapon)
         {
             PlayerAttacks(weapon);
@@ -292,119 +372,19 @@ namespace Engine
             }
         }
 
-        public void UsePotion(HealingPotion healingPotion)
-        {
-            PlayerDrinksPotion(healingPotion);
-            MonsterAttacks();
-
-            if (CurrentHitPoints <= 0)
-            {
-                PlayerDefeated();
-            }
-        }
-
-        private void MoveTo(Location newLocation, int respawn = 0)
-        {
-            if (!HasRequiredItemToEnterLocation(newLocation))
-            {
-                RaiseMessage("You must have an " + newLocation.ItemRequiredToEnter.Name + " to enter this location.", true);
-                return;
-            }
-
-            CurrentLocation = newLocation;
-
-            RaiseMessage("", false, true);
-
-            FullyHealPlayer();
-
-            if (newLocation.QuestAvailableHere != null)
-            {
-                if (HasThisQuest(newLocation.QuestAvailableHere))
-                {
-                    if (!CompletedThisQuest(newLocation.QuestAvailableHere) && HasAllQuestCompletionItems(newLocation.QuestAvailableHere))
-                    {
-                        RewardPlayerForCompletingQuest(newLocation);
-                    }
-                }
-                else
-                {
-                    AssignPlayerQuest(newLocation);
-                }
-            }
-
-            if (CurrentLocation.MonsterLivingHere != null)
-            {
-                SpawnNewMonster();
-            }
-            else
-            {
-                _currentMonster = null;
-            }
-        }
-
-        private void AssignPlayerQuest(Location newLocation)
-        {
-            RaiseMessage("You receive the " + newLocation.QuestAvailableHere.Name + " quest.", true);
-            RaiseMessage(newLocation.QuestAvailableHere.Description, true);
-            RaiseMessage("To complete it, return with:", true);
-            foreach (QuestCompletionItem qci in newLocation.QuestAvailableHere.QuestCompletionItems)
-            {
-                if (qci.Quantity == 1)
-                {
-                    RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.Name, true);
-                }
-                else
-                {
-                    RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.NamePlural, true);
-                }
-            }
-
-            Quests.Add(new PlayerQuest(newLocation.QuestAvailableHere));
-        }
-
-        private void RewardPlayerForCompletingQuest(Location newLocation)
-        {
-            RaiseMessage("You completed the '" + newLocation.QuestAvailableHere.Name + "' quest.", true);
-
-            RaiseMessage("You receive: ", true);
-            RaiseMessage(newLocation.QuestAvailableHere.RewardExperiencePoints.ToString() + " experience points", true);
-            RaiseMessage(newLocation.QuestAvailableHere.RewardGold.ToString() + " gold", true);
-            RaiseMessage(newLocation.QuestAvailableHere.RewardItem.Name, true);
-
-            RemoveQuestCompletionItems(newLocation.QuestAvailableHere);
-            AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
-            Gold += newLocation.QuestAvailableHere.RewardGold;
-            AddItemToInventory(newLocation.QuestAvailableHere.RewardItem);
-            MarkQuestCompleted(newLocation.QuestAvailableHere);
-        }
-
-        private void PlayerDrinksPotion(HealingPotion healingPotion)
-        {
-            CurrentHitPoints = (CurrentHitPoints + healingPotion.AmountToHeal);
-
-            if (CurrentHitPoints > MaximumHitPoints)
-            {
-                CurrentHitPoints = MaximumHitPoints;
-            }
-
-            RemoveItemFromInventory(healingPotion);
-
-            RaiseMessage("You drink a " + healingPotion.Name, true);
-        }
-
         private void PlayerAttacks(Weapon weapon)
         {
             int damageToMonster = RandomNumberGenerator.NumberBetween(weapon.MinimumDamage, weapon.MaximumDamage);
             _currentMonster.CurrentHitPoints -= damageToMonster;
 
-            RaiseMessage("You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points.", true);
+            RaiseMessage("You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points.", false);
         }
 
         private void MonsterDefeated()
         {
-            RaiseMessage("", true);
-            RaiseMessage("You defeated the " + _currentMonster.Name, true);
-            RaiseMessage("You receive " + _currentMonster.RewardExperiencePoints.ToString() + " experience points", true);
+            RaiseMessage("", true, false);
+            RaiseMessage("You defeated the " + _currentMonster.Name, false);
+            RaiseMessage("You receive " + _currentMonster.RewardExperiencePoints.ToString() + " experience points", false);
             RaiseMessage("You receive " + _currentMonster.RewardGold.ToString() + " gold", true);
 
             AddExperiencePoints(_currentMonster.RewardExperiencePoints);
@@ -412,41 +392,8 @@ namespace Engine
 
             LootMonster();
 
-            RaiseMessage("", true);
-
             FullyHealPlayer();
             SpawnNewMonster();
-        }
-
-        private void SpawnNewMonster()
-        {
-            RaiseMessage("You see a " + CurrentLocation.MonsterLivingHere.Name, true);
-            RaiseMessage("", true);
-
-            Monster standardMonster = World.MonsterByID(CurrentLocation.MonsterLivingHere.ID);
-
-            _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
-                standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
-
-            foreach (LootItem lootItem in standardMonster.LootTable)
-            {
-                _currentMonster.LootTable.Add(lootItem);
-            }
-        }
-
-        private void MonsterAttacks()
-        {
-            int damageToPlayer = RandomNumberGenerator.NumberBetween(0, _currentMonster.MaximumDamage);
-            CurrentHitPoints -= damageToPlayer;
-
-            RaiseMessage("The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage.", true);
-            RaiseMessage("", true);
-        }
-
-        private void PlayerDefeated()
-        {
-            RaiseMessage("The " + _currentMonster.Name + " killed you.", true);
-            MoveTo(World.LocationByID(World.LOCATION_ID_HOME), 1);
         }
 
         private void LootMonster()
@@ -478,13 +425,54 @@ namespace Engine
 
                 if (inventoryItem.Quantity == 1)
                 {
-                    RaiseMessage("You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.Name, true);
+                    RaiseMessage("You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.Name, false);
                 }
                 else
                 {
-                    RaiseMessage("You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.NamePlural, true);
+                    RaiseMessage("You loot " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.NamePlural, false);
                 }
             }
+
+            RaiseMessage("", true, false);
+        }
+
+        private void MonsterAttacks()
+        {
+            int damageToPlayer = RandomNumberGenerator.NumberBetween(0, _currentMonster.MaximumDamage);
+            CurrentHitPoints -= damageToPlayer;
+
+            RaiseMessage("The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage.", true);
+        }
+
+        private void PlayerDefeated()
+        {
+            RaiseMessage("The " + _currentMonster.Name + " killed you.", false, true);
+            MoveTo(World.LocationByID(World.LOCATION_ID_HOME), true);
+        }
+
+        public void UsePotion(HealingPotion healingPotion)
+        {
+            PlayerDrinksPotion(healingPotion);
+            MonsterAttacks();
+
+            if (CurrentHitPoints <= 0)
+            {
+                PlayerDefeated();
+            }
+        }
+
+        private void PlayerDrinksPotion(HealingPotion healingPotion)
+        {
+            CurrentHitPoints = (CurrentHitPoints + healingPotion.AmountToHeal);
+
+            if (CurrentHitPoints > MaximumHitPoints)
+            {
+                CurrentHitPoints = MaximumHitPoints;
+            }
+
+            RemoveItemFromInventory(healingPotion);
+
+            RaiseMessage("You drink a " + healingPotion.Name, true);
         }
 
         public string ToXmlString()

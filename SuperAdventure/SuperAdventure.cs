@@ -17,6 +17,21 @@ namespace SuperAdventure
         {
             InitializeComponent();
 
+            SetupPlayerObject();
+
+            SetupLabelValueDataBindings();
+
+            SetupInventoryDataGridView();
+
+            SetupQuestDataGridView();
+
+            SetupWeaponsComboBox();
+
+            SetupPotionsComboBox();
+        }
+
+        private void SetupPlayerObject()
+        {
             if (File.Exists(PLAYER_DATA_FILE_NAME))
             {
                 _player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
@@ -27,11 +42,23 @@ namespace SuperAdventure
                 _player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             }
 
+            _player.PropertyChanged += PlayerOnPropertyChanged;
+
+            _player.OnMessage += DisplayMessage;
+
+            _player.Move(_player.CurrentLocation);
+        }
+
+        private void SetupLabelValueDataBindings()
+        {
             valueHitPoints.DataBindings.Add("Text", _player, "CurrentHitPoints");
             valueGold.DataBindings.Add("Text", _player, "Gold");
             valueExperience.DataBindings.Add("Text", _player, "ExperiencePoints");
             valueLevel.DataBindings.Add("Text", _player, "Level");
+        }
 
+        private void SetupInventoryDataGridView()
+        {
             dataGridViewInventory.RowHeadersVisible = false;
             dataGridViewInventory.AutoGenerateColumns = false;
 
@@ -49,7 +76,10 @@ namespace SuperAdventure
                 HeaderText = "Quantity",
                 DataPropertyName = "Quantity"
             });
+        }
 
+        private void SetupQuestDataGridView()
+        {
             dataGridViewQuests.RowHeadersVisible = false;
             dataGridViewQuests.AutoGenerateColumns = false;
 
@@ -67,7 +97,10 @@ namespace SuperAdventure
                 HeaderText = "Done?",
                 DataPropertyName = "IsCompleted"
             });
+        }
 
+        private void SetupWeaponsComboBox()
+        {
             comboBoxWeapons.DataSource = _player.Weapons;
             comboBoxWeapons.DisplayMember = "Name";
             comboBoxWeapons.ValueMember = "Id";
@@ -78,16 +111,13 @@ namespace SuperAdventure
             }
 
             comboBoxWeapons.SelectedIndexChanged += comboBoxWeapons_SelectedIndexChanged;
+        }
 
+        private void SetupPotionsComboBox()
+        {
             comboBoxPotions.DataSource = _player.Potions;
             comboBoxPotions.DisplayMember = "Name";
             comboBoxPotions.ValueMember = "Id";
-
-            _player.PropertyChanged += PlayerOnPropertyChanged;
-
-            _player.OnMessage += DisplayMessage;
-
-            _player.Move(_player.CurrentLocation);
         }
 
         private void DisplayMessage(object sender, MessageEventArgs messageEventArgs)
@@ -96,18 +126,19 @@ namespace SuperAdventure
             {
                 richTextBoxMessages.Text = "";
             }
-            else
+
+            if (!string.IsNullOrEmpty(messageEventArgs.Message))
             {
                 richTextBoxMessages.Text += messageEventArgs.Message + Environment.NewLine;
-
-                if (messageEventArgs.AddExtraNewLine)
-                {
-                    richTextBoxMessages.Text += Environment.NewLine;
-                }
-
-                richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
-                richTextBoxMessages.ScrollToCaret();
             }
+
+            if (messageEventArgs.AddExtraNewLine)
+            {
+                richTextBoxMessages.Text += Environment.NewLine;
+            }
+
+            richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
+            richTextBoxMessages.ScrollToCaret();
         }
 
         private void PlayerOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -193,14 +224,14 @@ namespace SuperAdventure
             _player.UsePotion(potion);
         }
 
-        private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
-        }
-
         private void comboBoxWeapons_SelectedIndexChanged(object sender, EventArgs e)
         {
             _player.CurrentWeapon = (Weapon)comboBoxWeapons.SelectedItem;
+        }
+
+        private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
         }
 
         private void buttonNew_Click(object sender, EventArgs e)
