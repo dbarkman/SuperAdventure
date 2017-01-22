@@ -146,13 +146,13 @@ namespace Engine
             if (item is HealingPotion) OnPropertyChanged("Potions");
         }
 
-        public void AddExperiencePoints(int experiencePoints)
+        private void AddExperiencePoints(int experiencePoints)
         {
             ExperiencePoints += experiencePoints;
             MaximumHitPoints = (Level * World.PLAYER_HIT_POINT_LEVEL_MULTIPLIER);
         }
 
-        public void AddItemToInventory(Item item, int quantity = 1)
+        private void AddItemToInventory(Item item, int quantity = 1)
         {
             InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == item.ID);
             if (inventoryItem == null)
@@ -167,7 +167,7 @@ namespace Engine
             RaiseInventoryChangedEvent(item);
         }
 
-        public void RemoveItemFromInventory(Item item, int quantity = 1)
+        private void RemoveItemFromInventory(Item item, int quantity = 1)
         {
             InventoryItem inventoryItem = Inventory.SingleOrDefault(ii => ii.Details.ID == item.ID);
             if (inventoryItem != null) inventoryItem.Quantity -= quantity;
@@ -252,30 +252,30 @@ namespace Engine
             }
         }
 
-        public bool HasRequiredItemToEnterLocation(Location location)
+        private bool HasRequiredItemToEnterLocation(Location location)
         {
             if (location.ItemRequiredToEnter == null) return true;
             return Inventory.Any(inventoryItem => inventoryItem.Details.ID == location.ItemRequiredToEnter.ID);
         }
 
-        public void FullyHealPlayer()
+        private void FullyHealPlayer()
         {
             CurrentHitPoints = MaximumHitPoints;
         }
 
-        public bool HasThisQuest(Quest quest)
+        private bool HasThisQuest(Quest quest)
         {
             return Quests.Any(playerQuest => playerQuest.Details.ID == quest.ID);
         }
 
-        public bool CompletedThisQuest(Quest quest)
+        private bool CompletedThisQuest(Quest quest)
         {
             PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
             if (playerQuest == null) return false;
             return playerQuest.IsCompleted;
         }
 
-        public bool HasAllQuestCompletionItems(Quest quest)
+        private bool HasAllQuestCompletionItems(Quest quest)
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
@@ -303,7 +303,7 @@ namespace Engine
             MarkQuestCompleted(newLocation.QuestAvailableHere);
         }
 
-        public void RemoveQuestCompletionItems(Quest quest)
+        private void RemoveQuestCompletionItems(Quest quest)
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
@@ -312,7 +312,7 @@ namespace Engine
             }
         }
 
-        public void MarkQuestCompleted(Quest quest)
+        private void MarkQuestCompleted(Quest quest)
         {
             PlayerQuest playerQuest = Quests.SingleOrDefault(q => q.Details.ID == quest.ID);
             if (playerQuest != null) playerQuest.IsCompleted = true;

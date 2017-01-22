@@ -14,25 +14,29 @@ namespace Engine.Tests
         [TestMethod()]
         public void ItemByIDTest()
         {
-            Assert.Fail();
+            int id = World.ItemByID(World.ITEM_ID_RUSTY_SWORD).ID;
+            Assert.AreEqual(id, 1);
         }
 
         [TestMethod()]
         public void MonsterByIDTest()
         {
-            Assert.Fail();
+            int id = World.MonsterByID(World.MONSTER_ID_RAT).ID;
+            Assert.AreEqual(id, 1);
         }
 
         [TestMethod()]
         public void QuestByIDTest()
         {
-            Assert.Fail();
+            int id = World.QuestByID(World.QUEST_ID_CLEAR_ALCHEMIST_GARDEN).ID;
+            Assert.AreEqual(id, 1);
         }
 
         [TestMethod()]
         public void LocationByIDTest()
         {
-            Assert.Fail();
+            int id = World.LocationByID(World.LOCATION_ID_HOME).ID;
+            Assert.AreEqual(id, 1);
         }
     }
 }
