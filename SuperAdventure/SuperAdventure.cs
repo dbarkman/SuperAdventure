@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
@@ -12,8 +11,6 @@ namespace SuperAdventure
     public partial class SuperAdventure : Form
     {
         private Player _player;
-        private Location _location;
-        private Monster _currentMonster;
         private const string PLAYER_DATA_FILE_NAME = "PlayerData.xml";
 
         public SuperAdventure()
@@ -90,20 +87,27 @@ namespace SuperAdventure
 
             _player.OnMessage += DisplayMessage;
 
-            MoveTo(_player.CurrentLocation);
+            _player.Move(_player.CurrentLocation);
         }
 
         private void DisplayMessage(object sender, MessageEventArgs messageEventArgs)
         {
-            richTextBoxMessages.Text += messageEventArgs.Message + Environment.NewLine;
-
-            if (messageEventArgs.AddExtraNewLine)
+            if (messageEventArgs.ClearTextBox)
             {
-                richTextBoxMessages.Text += Environment.NewLine;
+                richTextBoxMessages.Text = "";
             }
+            else
+            {
+                richTextBoxMessages.Text += messageEventArgs.Message + Environment.NewLine;
 
-            richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
-            richTextBoxMessages.ScrollToCaret();
+                if (messageEventArgs.AddExtraNewLine)
+                {
+                    richTextBoxMessages.Text += Environment.NewLine;
+                }
+
+                richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
+                richTextBoxMessages.ScrollToCaret();
+            }
         }
 
         private void PlayerOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -130,13 +134,13 @@ namespace SuperAdventure
 
             if (propertyChangedEventArgs.PropertyName == "CurrentLocation")
             {
+                richTextBoxLocation.Text = _player.CurrentLocation.Name + Environment.NewLine;
+                richTextBoxLocation.Text += _player.CurrentLocation.Description + Environment.NewLine;
+
                 buttonGoNorth.Visible = (_player.CurrentLocation.LocationToNorth != null);
                 buttonGoEast.Visible = (_player.CurrentLocation.LocationToEast != null);
                 buttonGoSouth.Visible = (_player.CurrentLocation.LocationToSouth != null);
                 buttonGoWest.Visible = (_player.CurrentLocation.LocationToWest != null);
-
-                richTextBoxLocation.Text = _player.CurrentLocation.Name + Environment.NewLine;
-                richTextBoxLocation.Text += _player.CurrentLocation.Description + Environment.NewLine;
 
                 if (_player.CurrentLocation.MonsterLivingHere != null)
                 {
@@ -148,7 +152,6 @@ namespace SuperAdventure
                 }
                 else
                 {
-                    _currentMonster = null;
                     labelSelectAction.Visible = false;
                     comboBoxWeapons.Visible = false;
                     buttonUseWeapon.Visible = false;
@@ -178,94 +181,6 @@ namespace SuperAdventure
             _player.MoveWest();
         }
 
-        private void MoveTo(Location newLocation, int respawn = 0)
-        {
-            _location = newLocation;
-            if (respawn == 0) richTextBoxMessages.Text = "";
-
-            if (!_player.HasRequiredItemToEnterLocation(newLocation))
-            {
-                richTextBoxMessages.Text += "You must have an " + newLocation.ItemRequiredToEnter.Name + " to enter this location." + Environment.NewLine;
-                return;
-            }
-
-            _player.CurrentLocation = newLocation;
-
-            _player.FullyHealPlayer();
-
-            if (newLocation.QuestAvailableHere != null)
-            {
-                if (_player.HasThisQuest(newLocation.QuestAvailableHere))
-                {
-                    if (!_player.CompletedThisQuest(newLocation.QuestAvailableHere) && _player.HasAllQuestCompletionItems(newLocation.QuestAvailableHere))
-                    {
-                        RewardPlayerForCompletingQuest(newLocation);
-                    }
-                }
-                else
-                {
-                    AssignPlayerQuest(newLocation);
-                }
-            }
-
-            if (_player.CurrentLocation.MonsterLivingHere != null)
-            {
-                SpawnMonster();
-            }
-        }
-
-        private void SpawnMonster()
-        {
-            richTextBoxMessages.Text += "You see a " + _player.CurrentLocation.MonsterLivingHere.Name + Environment.NewLine;
-            richTextBoxMessages.Text += Environment.NewLine;
-
-            Monster standardMonster = World.MonsterByID(_player.CurrentLocation.MonsterLivingHere.ID);
-
-            _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
-                standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
-
-            foreach (LootItem lootItem in standardMonster.LootTable)
-            {
-                _currentMonster.LootTable.Add(lootItem);
-            }
-        }
-
-        private void AssignPlayerQuest(Location newLocation)
-        {
-            richTextBoxMessages.Text += "You receive the " + newLocation.QuestAvailableHere.Name + " quest." + Environment.NewLine;
-            richTextBoxMessages.Text += newLocation.QuestAvailableHere.Description + Environment.NewLine;
-            richTextBoxMessages.Text += "To complete it, return with:" + Environment.NewLine;
-            foreach (QuestCompletionItem qci in newLocation.QuestAvailableHere.QuestCompletionItems)
-            {
-                if (qci.Quantity == 1)
-                {
-                    richTextBoxMessages.Text += qci.Quantity.ToString() + " " + qci.Details.Name + Environment.NewLine;
-                }
-                else
-                {
-                    richTextBoxMessages.Text += qci.Quantity.ToString() + " " + qci.Details.NamePlural + Environment.NewLine;
-                }
-            }
-
-            _player.Quests.Add(new PlayerQuest(newLocation.QuestAvailableHere));
-        }
-
-        private void RewardPlayerForCompletingQuest(Location newLocation)
-        {
-            richTextBoxMessages.Text += "You completed the '" + newLocation.QuestAvailableHere.Name + "' quest." + Environment.NewLine;
-
-            richTextBoxMessages.Text += "You receive: " + Environment.NewLine;
-            richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardExperiencePoints.ToString() + " experience points" + Environment.NewLine;
-            richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardGold.ToString() + " gold" + Environment.NewLine;
-            richTextBoxMessages.Text += newLocation.QuestAvailableHere.RewardItem.Name + Environment.NewLine;
-
-            _player.RemoveQuestCompletionItems(newLocation.QuestAvailableHere);
-            _player.AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
-            _player.Gold += newLocation.QuestAvailableHere.RewardGold;
-            _player.AddItemToInventory(newLocation.QuestAvailableHere.RewardItem);
-            _player.MarkQuestCompleted(newLocation.QuestAvailableHere);
-        }
-
         private void buttonUseWeapon_Click(object sender, EventArgs e)
         {
             Weapon weapon = (Weapon)comboBoxWeapons.SelectedItem;
@@ -276,12 +191,6 @@ namespace SuperAdventure
         {
             HealingPotion potion = (HealingPotion)comboBoxPotions.SelectedItem;
             _player.UsePotion(potion);
-        }
-
-        private void ScrollToBottomOfMessages()
-        {
-            richTextBoxMessages.SelectionStart = richTextBoxMessages.Text.Length;
-            richTextBoxMessages.ScrollToCaret();
         }
 
         private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
@@ -297,7 +206,7 @@ namespace SuperAdventure
         private void buttonNew_Click(object sender, EventArgs e)
         {
             _player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
-            MoveTo(_player.CurrentLocation);
+            _player.Move(_player.CurrentLocation);
         }
 
         private void buttonYes_Click(object sender, EventArgs e)

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Engine;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -161,6 +162,48 @@ namespace Engine.Tests
             Player player = Player.CreateDefaultPlayer(World.DEFAULT_CURRENT_HIT_POINTS, World.DEFAULT_MAXIMUM_HIT_POINTS, World.DEFAULT_GOLD, World.DEFAULT_EXPERIENCE_POINTS);
             string xmlDocument = player.ToXmlString();
             Assert.AreEqual(xmlDocument, "<Player><Stats><CurrentHitPoints>10</CurrentHitPoints><MaximumHitPoints>10</MaximumHitPoints><Gold>20</Gold><ExperiencePoints>0</ExperiencePoints><CurrentLocation>1</CurrentLocation><CurrentWeapon>1</CurrentWeapon></Stats><InventoryItems><InventoryItem ID=\"1\" Quantity=\"1\" /></InventoryItems><PlayerQuests /></Player>");
+        }
+
+        [TestMethod()]
+        public void MoveTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void MoveNorthTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void MoveEastTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void MoveSouthTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void MoveWestTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void UseWeaponTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void UsePotionTest()
+        {
+            Assert.Fail();
         }
     }
 }
